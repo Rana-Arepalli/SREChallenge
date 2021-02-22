@@ -1,0 +1,32 @@
+---
+- name: apt update
+  shell: sudo apt update
+
+- name: install apache2
+  shell: sudo apt install apache2
+
+- name: Start service httpd, if not running
+  service:
+    name: apache2
+    state: stopped
+
+- name: download code from git
+  shell: git clone
+  ignore_errors: yes
+
+- name: copy index.html to /var/www/html
+  shell: cp /opt/index.html /var/www/html
+
+- name: restart apache2 service
+  shell: service apache2 restart
+
+- name: check healthcheck of application
+  shell: curl -s -o /dev/null -I -w "%{http_code}" localhost:80
+  register: status
+
+- debug:
+    msg: "{{ status.stdout }}"
+
+- debug:
+    msg: "Deployment successfull"
+  when: (status.stdout == "200")
